@@ -1,26 +1,43 @@
 const AWS = require('aws-sdk');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const bucketName = 'top-care'
+const path = require('path');
 require('dotenv').config();
 
 // Configuração das credenciais AWS usando variáveis de ambiente
 AWS.config.update({
   region: 'us-east-1',
-  accessKeyId: '',
-  secretAccessKey: ''
+  accessKeyId: '{key}',
+  secretAccessKey: '{secret}'
 });
 
 // Instância do S3
 const s3 = new AWS.S3();
 
+const mandarImagem = async (referencia) => {
+  try {
+    const filePath = '{copiar caminho do arquivo}';
+
+    if (!fs.existsSync(filePath)) {
+      console.error('Arquivo não encontrado:', filePath);
+      return;
+    }
+
+    const fileUrl = await uploadFile(filePath, bucketName, referencia);
+    console.log('Arquivo enviado com sucesso:', fileUrl);
+  } catch (err) {
+    console.error('Erro ao enviar o arquivo:', err);
+  }
+};
+
 // Função para fazer o upload de um arquivo para o S3
-const uploadFile = (filePath, bucketName, usuario_id) => {
+const uploadFile = (filePath, bucketName, referencia) => {
   const fileContent = fs.readFileSync(filePath); // Lê o arquivo corretamente
-  const key = uuidv4(); // Gera um UUID para nome do arquivo
 
   const params = {
     Bucket: bucketName,
-    Key: key,
+    Key: referencia + '.jpeg',
     Body: fileContent // Agora Body está correto!
   };
 
@@ -31,39 +48,35 @@ const uploadFile = (filePath, bucketName, usuario_id) => {
       }
 
       resolve({
-        fileUrl: data.Location,
-        usuario_id
+        fileUrl: data.Location
       });
     });
   });
 };
 
 // Função para baixar um arquivo do S3
-const downloadFile = (bucketName, keyName, downloadPath, usuario_id) => {
+const downloadFile = (referencia) => {
   const params = {
     Bucket: bucketName,
-    Key: keyName
+    Key: referencia + ".jpeg"
   };
 
-  const file = fs.createWriteStream(downloadPath);
+  s3.getObject(params).promise()
+    .then(data => {
 
-  return new Promise((resolve, reject) => {
-    s3.getObject(params).createReadStream().pipe(file);
+      const downloadsPath = path.join(require('os').homedir(), 'Downloads');
+      const filePath = path.join(downloadsPath, referencia + ".jpeg");
+      fs.writeFileSync(filePath, data.Body);
 
-    file.on('close', () => {
-      resolve({
-        downloadedFilePath: downloadPath,
-        usuario_id
-      });
+      console.log('Arquivo baixado com sucesso:', filePath);
+
+    })
+    .catch(err => {
+      console.error('Erro ao baixar o arquivo:', err);
     });
-
-    file.on('error', (err) => {
-      reject(err);
-    });
-  });
 };
 
 module.exports = {
-  uploadFile,
+  mandarImagem,
   downloadFile
 };

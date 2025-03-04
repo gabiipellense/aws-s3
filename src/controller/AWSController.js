@@ -22,14 +22,14 @@ const awsListarUsuarios = async (req, res) => {
 
 // Função para lidar com o upload de arquivo
 const awsUploadFile = async (req, res) => {
-  const { filePath, bucketName, usuario_id } = req.body;
+  const { id } = req.body;
 
-  if (!filePath || !bucketName ||  !usuario_id) {
-    return res.status(400).json({ erro: 'filePath, bucketName, keyName e usuario_id são obrigatórios.' });
+  if (!id) {
+    return res.status(400).json({ erro: 'id obrigatório.' });
   }
 
   try {
-    const fileData = await awsService.uploadFileToS3(filePath, bucketName, usuario_id);
+    const fileData = await awsService.uploadFileToS3(id);
     res.status(200).json({ mensagem: 'Arquivo carregado com sucesso', fileUrl: fileData.fileUrl });
   } catch (err) {
     res.status(500).json({ erro: err.message });
@@ -38,14 +38,14 @@ const awsUploadFile = async (req, res) => {
 
 // Função para lidar com o download de arquivo
 const awsDownloadFile = async (req, res) => {
-  const { bucketName, keyName, downloadPath, usuario_id } = req.body;
+  const { imagemId } = req.body;
 
-  if (!bucketName || !downloadPath || !usuario_id) {
-    return res.status(400).json({ erro: 'bucketName, downloadPath e usuario_id são obrigatórios.' });
+  if (!imagemId) {
+    return res.status(400).json({ erro: 'imagemId obrigatório.' });
   }
 
   try {
-    const downloadedFile = await awsService.downloadFileFromS3(bucketName, downloadPath, usuario_id);
+    const downloadedFile = await awsService.downloadFileFromS3(imagemId);
     res.status(200).json({ mensagem: 'Arquivo baixado com sucesso', downloadedFilePath: downloadedFile.downloadedFilePath });
   } catch (err) {
     res.status(500).json({ erro: err.message });

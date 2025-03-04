@@ -2,14 +2,14 @@ const imagemService = require('../service/imagemService');
 
 // Criar nova imagem
 const criarImagem = async (req, res) => {
-  const { titulo, referencia } = req.body;
+  const { titulo, idUser } = req.body;
 
-  if (!titulo || !referencia) {
+  if (!titulo || !idUser ) {
     return res.status(400).json({ erro: 'Título e referência são obrigatórios.' });
   }
 
   try {
-    const imagem = await imagemService.criarImagem(titulo, referencia);
+    const imagem = await imagemService.criarImagem(titulo, idUser);
     res.status(201).json(imagem);
   } catch (err) {
     res.status(500).json({ erro: err.message });

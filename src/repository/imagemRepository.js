@@ -1,16 +1,29 @@
 const conexao = require('../database/database');
 const Imagem = require('../models/imagem');
+const { v4: uuidv4 } = require('uuid');
 
 // Função para criar uma imagem
-const criarImagem = (titulo, referencia, data_criacao) => {
+const criarImagem = (titulo, data_criacao, idUser) => {
   return new Promise((resolve, reject) => {
-    const sql = 'INSERT INTO imagem (titulo, referencia, data_criacao) VALUES (?, ?, ?)';
-    conexao.query(sql, [titulo, referencia, data_criacao], (err, result) => {
+    const referencia = uuidv4()
+    const sql = 'INSERT INTO imagem (titulo, referencia, data_criacao, id_usuario) VALUES (?, ?, ?, ?)';
+    conexao.query(sql, [titulo, referencia, data_criacao, idUser], (err, result) => {
       if (err) return reject(err);
       resolve(new Imagem(result.insertId, titulo, referencia, data_criacao));
     });
   });
 };
+
+const buscarImagem = (id) =>{
+  return new Promise((resolve, reject) => {
+    const sql = 'SELECT * FROM imagem WHERE id = ?';
+    conexao.query(sql,[id], (err, rows) => {
+      if (err) return reject(err);
+      const row = rows[0]
+      resolve(new Imagem(row.id, row.titulo, row.referencia, row.id_usuario, row.data_criacao));
+    });
+  });
+}
 
 // Função para listar todas as imagens
 const listarImagens = () => {
@@ -47,6 +60,7 @@ const deletarImagem = (id) => {
 
 module.exports = {
   criarImagem,
+  buscarImagem,
   listarImagens,
   atualizarImagem,
   deletarImagem,

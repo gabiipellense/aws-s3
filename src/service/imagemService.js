@@ -1,10 +1,10 @@
 const imagemRepository = require('../repository/imagemRepository');
 
 // Função para criar imagem
-const criarImagem = async (titulo, referencia) => {
+const criarImagem = async (titulo, idUser) => {
   const data_criacao = new Date().toISOString().slice(0, 19).replace('T', ' ');
   try {
-    return await imagemRepository.criarImagem(titulo, referencia, data_criacao);
+    return await imagemRepository.criarImagem(titulo, data_criacao, idUser);
   } catch (err) {
     throw new Error('Erro ao criar a imagem');
   }
